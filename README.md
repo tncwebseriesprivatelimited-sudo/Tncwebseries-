@@ -1,1 +1,364 @@
-# Tncwebseries-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Vault Pro | 150TB Ultimate Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Scripts for Chrome Optimization and Screenshots -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://html2canvas.harness.io/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #00f2ff;
+            --bg-body: #05080f;
+            --bg-card: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius: 16px;
+            --danger: #ef4444;
+            --success: #10b981;
+            --share: #8b5cf6;
+        }
+
+        /* Chrome Scrollbar Optimization */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background-color: var(--bg-body); color: var(--text-main); line-height: 1.5; overflow-x: hidden; padding-bottom: 100px; }
+
+        .status-bar { 
+            font-size: 0.75rem; text-align: center; padding: 12px; 
+            background: linear-gradient(90deg, #000, #1e293b, #000); 
+            color: var(--accent); font-weight: 800; border-bottom: 1px solid var(--primary);
+            position: sticky; top: 0; z-index: 1100; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        nav { background: rgba(5, 8, 15, 0.95); backdrop-filter: blur(20px); padding: 15px; position: sticky; top: 38px; z-index: 1000; border-bottom: 1px solid #1e293b; }
+        .logo { font-size: 1.4rem; font-weight: 800; text-decoration: none; color: #fff; letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+
+        .nav-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .nav-btn { padding: 6px 12px; border-radius: 8px; border: none; font-size: 0.7rem; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; }
+
+        .search-bar { background: #1e293b; border-radius: 12px; padding: 12px; margin-top: 10px; display: flex; align-items: center; border: 1px solid transparent; }
+        .search-bar input { background: transparent; border: none; color: white; width: 100%; outline: none; font-size: 16px; }
+
+        .tabs { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-top: 5px; scrollbar-width: none; }
+        .tab { background: #1e293b; padding: 8px 18px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .tab.active { background: var(--primary); box-shadow: 0 0 15px rgba(37, 99, 235, 0.5); }
+
+        .container { padding: 15px; }
+        .media-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        @media (min-width: 768px) { .media-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .media-item { background: var(--bg-card); border-radius: var(--radius); overflow: hidden; border: 1px solid #1e293b; position: relative; transition: 0.3s; }
+        .media-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #000; display: block; cursor: pointer; }
+        .media-info { padding: 12px; }
+        .media-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; gap: 8px; font-size: 0.8rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-share { background: var(--share); color: white; margin-top: 8px; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); margin-top: 8px; font-size: 0.7rem; }
+
+        .fab { position: fixed; bottom: 30px; right: 20px; width: 65px; height: 65px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 35px; border: none; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.6); z-index: 1500; cursor: pointer; }
+
+        #player-box { position: fixed; inset: 0; z-index: 9999; background: #000; display: none; }
+        video { width: 100%; height: 100%; outline: none; }
+        .exit-btn { position: absolute; top: 30px; right: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 800; z-index: 10001; cursor: pointer; }
+
+        #auth-overlay { position:fixed; inset:0; background:var(--bg-body); z-index:50000; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .auth-card { background:var(--bg-card); padding:40px 30px; border-radius:24px; width:100%; max-width:400px; text-align:center; border: 1px solid #1e293b; }
+        .auth-card input { width:100%; padding:12px; margin-bottom:10px; background:#05080f; border:1px solid #1e293b; color:white; border-radius:10px; }
+
+        .modal { position: fixed; inset: 0; background: var(--bg-body); z-index: 2000; padding: 25px; overflow-y: auto; display: none; }
+        .form-section { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #1e293b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: 800; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: #05080f; border: 1px solid #1e293b; color: white; border-radius: 10px; outline: none; }
+        
+        .hidden { display: none !important; }
+        .tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); font-size: 0.6rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; color: var(--accent); z-index: 10; }
+    </style>
+</head>
+<body id="capture-area">
+
+<div class="status-bar" id="storage-status">Initializing System...</div>
+
+<nav>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <a href="#" class="logo">VAULT<span>PRO</span></a>
+        <div class="nav-actions">
+            <button onclick="shareApp()" class="nav-btn" style="background:var(--share)">SHARE APP</button>
+            <button onclick="takeScreenshot()" class="nav-btn" style="background:#6366f1">CAPTURE UI</button>
+            <button onclick="exportData()" class="nav-btn" style="background:#059669">BACKUP</button>
+            <button onclick="logout()" class="nav-btn" style="background:#334155">LOGOUT</button>
+        </div>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search movies, series, anime..." onkeyup="filterMedia()">
+    </div>
+    <div class="tabs">
+        <div class="tab active" onclick="filterCat('all', this)">All Content</div>
+        <div class="tab" onclick="filterCat('movie', this)">Movies</div>
+        <div class="tab" onclick="filterCat('series', this)">Series</div>
+        <div class="tab" onclick="filterCat('anime', this)">Anime</div>
+    </div>
+</nav>
+
+<div class="container">
+    <div id="media-display" class="media-grid"></div>
+</div>
+
+<button id="fab-add" class="fab hidden" onclick="toggleModal('admin-modal', true)">+</button>
+
+<!-- ADMIN MODAL -->
+<div id="admin-modal" class="modal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0;">Add to Vault</h2>
+        <button onclick="toggleModal('admin-modal', false)" style="background:none; border:none; color:white; font-size:2.5rem">&times;</button>
+    </div>
+    <div class="form-group"><label>Title</label><input type="text" id="up-title" placeholder="e.g. Inception"></div>
+    <div class="form-section">
+        <label style="color:var(--accent); font-size: 0.7rem; font-weight: 800;">VIDEO SOURCE</label>
+        <div class="form-group"><label>Upload Video</label><input type="file" id="up-video-file" accept="video/*"></div>
+        <div class="form-group"><label>Direct URL</label><input type="text" id="up-video-url" placeholder="https://..."></div>
+    </div>
+    <div class="form-section">
+        <label style="color:var(--accent); font-size: 0.7rem; font-weight: 800;">POSTER SOURCE</label>
+        <div class="form-group"><label>Upload Photo</label><input type="file" id="up-poster-file" accept="image/*"></div>
+        <div class="form-group"><label>Image Link</label><input type="text" id="up-poster-link" placeholder="https://..."></div>
+    </div>
+    <div class="form-group">
+        <label>Category</label>
+        <select id="up-cat"><option value="movie">Movie</option><option value="series">Series</option><option value="anime">Anime</option></select>
+    </div>
+    <button class="btn btn-primary" id="save-btn" onclick="saveContent()">SAVE PERMANENTLY</button>
+</div>
+
+<!-- PLAYER -->
+<div id="player-box">
+    <button class="exit-btn" onclick="closePlayer()">CLOSE PLAYER</button>
+    <video id="mainVideo" controls playsinline></video>
+</div>
+
+<!-- AUTH -->
+<div id="auth-overlay">
+    <div class="auth-card">
+        <h1>Vault<span>Pro</span></h1>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:20px;">150TB Local File Storage (Chrome Only)</p>
+        <input type="text" id="auth-user" placeholder="Username">
+        <input type="password" id="auth-pass" placeholder="Password">
+        <button class="btn btn-primary" onclick="handleAuth()">Access Vault</button>
+        <div id="auth-msg" style="margin-top:20px; font-size:0.8rem; color:var(--danger)"></div>
+    </div>
+</div>
+
+<script>
+    let db;
+    let currentUser = null;
+    let currentCategory = 'all';
+
+    // 1. DB INIT
+    const request = indexedDB.open("VaultPro_Chrome_v2", 1);
+    request.onupgradeneeded = (e) => {
+        db = e.target.result;
+        db.createObjectStore("users", { keyPath: "username" });
+        db.createObjectStore("media", { keyPath: "id", autoIncrement: true });
+        e.target.transaction.objectStore("users").put({ username: 'admin', password: '123', role: 'admin' });
+    };
+    request.onsuccess = (e) => { 
+        db = e.target.result; 
+        checkSession(); 
+        updateStorageInfo();
+    };
+
+    // 2. SHARE APP LINK FUNCTION
+    function shareApp() {
+        const pageUrl = window.location.href;
+        navigator.clipboard.writeText(pageUrl).then(() => {
+            alert("✅ Permanent Vault Link Copied to Clipboard!");
+        }).catch(err => {
+            alert("Error copying link: " + err);
+        });
+    }
+
+    // 3. SCREENSHOT (CAPTURE) FUNCTION
+    function takeScreenshot() {
+        const target = document.getElementById('capture-area');
+        alert("Generating Screenshot... please wait.");
+        html2canvas(target).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'VaultPro_Snapshot.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    // 4. STORAGE & CONTENT LOGIC
+    async function saveContent() {
+        const title = document.getElementById('up-title').value;
+        const videoFile = document.getElementById('up-video-file').files[0];
+        const videoUrl = document.getElementById('up-video-url').value;
+        const posterFile = document.getElementById('up-poster-file').files[0];
+        const posterUrl = document.getElementById('up-poster-link').value;
+        const saveBtn = document.getElementById('save-btn');
+
+        if(!title || (!videoFile && !videoUrl)) return alert("Title and Video are required!");
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Processing for Chrome...";
+
+        let finalPoster = posterUrl || 'https://via.placeholder.com/300x450';
+        if(posterFile) finalPoster = await fileToBlob(posterFile);
+
+        const entry = {
+            title,
+            category: document.getElementById('up-cat').value,
+            videoData: videoFile || videoUrl,
+            videoType: videoFile ? 'file' : 'url',
+            posterData: finalPoster,
+            date: new Date().getTime()
+        };
+
+        const tx = db.transaction("media", "readwrite");
+        tx.objectStore("media").add(entry);
+        tx.oncomplete = () => location.reload();
+    }
+
+    function fileToBlob(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function loadMedia() {
+        const grid = document.getElementById('media-display');
+        grid.innerHTML = '';
+        db.transaction("media").objectStore("media").openCursor().onsuccess = (e) => {
+            const cursor = e.target.result;
+            if(cursor) {
+                const m = cursor.value;
+                if(currentCategory === 'all' || m.category === currentCategory) {
+                    const div = document.createElement('div');
+                    div.className = 'media-item';
+                    div.innerHTML = `
+                        <div class="tag">${m.category}</div>
+                        <img src="${m.posterData}" class="media-poster" onclick="playMedia(${m.id})">
+                        <div class="media-info">
+                            <div class="media-title">${m.title}</div>
+                            <button class="btn btn-primary" onclick="playMedia(${m.id})">WATCH</button>
+                            ${currentUser.role === 'admin' ? `<button class="btn btn-danger" onclick="deleteMedia(${m.id})">DELETE</button>` : ''}
+                        </div>`;
+                    grid.appendChild(div);
+                }
+                cursor.continue();
+            }
+        };
+    }
+
+    function playMedia(id) {
+        db.transaction("media").objectStore("media").get(id).onsuccess = (e) => {
+            const m = e.target.result;
+            const video = document.getElementById('mainVideo');
+            document.getElementById('player-box').style.display = 'block';
+            let src = m.videoType === 'file' ? URL.createObjectURL(m.videoData) : m.videoData;
+            
+            if (src.includes('.m3u8') && Hls.isSupported()) {
+                const hls = new Hls(); hls.loadSource(src); hls.attachMedia(video);
+            } else {
+                video.src = src;
+            }
+            video.play();
+        };
+    }
+
+    function closePlayer() {
+        const v = document.getElementById('mainVideo');
+        v.pause();
+        v.src = "";
+        document.getElementById('player-box').style.display = 'none';
+    }
+
+    function handleAuth() {
+        const user = document.getElementById('auth-user').value.toLowerCase();
+        const pass = document.getElementById('auth-pass').value;
+        const tx = db.transaction("users", "readwrite");
+        tx.objectStore("users").get(user).onsuccess = (e) => {
+            const u = e.target.result;
+            if(u && u.password === pass) {
+                localStorage.setItem('vault_session', JSON.stringify(u));
+                location.reload();
+            } else if (!u) {
+                const newUser = { username: user, password: pass, role: 'user' };
+                tx.objectStore("users").add(newUser);
+                localStorage.setItem('vault_session', JSON.stringify(newUser));
+                location.reload();
+            } else {
+                document.getElementById('auth-msg').innerText = "Wrong Password";
+            }
+        };
+    }
+
+    function checkSession() {
+        const session = localStorage.getItem('vault_session');
+        if(session) {
+            currentUser = JSON.parse(session);
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('fab-add').classList.remove('hidden');
+            loadMedia();
+        }
+    }
+
+    function logout() { localStorage.removeItem('vault_session'); location.reload(); }
+    function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
+    function filterCat(cat, el) {
+        currentCategory = cat;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active'); loadMedia();
+    }
+    
+    function updateStorageInfo() {
+        if (navigator.storage && navigator.storage.estimate) {
+            navigator.storage.estimate().then(est => {
+                const used = (est.usage / (1024 ** 3)).toFixed(2);
+                document.getElementById('storage-status').innerText = `CHROME STORAGE: ${used} GB USED / 150TB VIRTUAL POOL`;
+            });
+        }
+    }
+
+    function deleteMedia(id) {
+        if(confirm("Delete permanently?")) {
+            db.transaction("media", "readwrite").objectStore("media").delete(id).onsuccess = () => loadMedia();
+        }
+    }
+
+    function filterMedia() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.media-item').forEach(item => {
+            const title = item.querySelector('.media-title').innerText.toLowerCase();
+            item.style.display = title.includes(q) ? 'block' : 'none';
+        });
+    }
+
+    function exportData() {
+        db.transaction("media").objectStore("media").getAll().onsuccess = (e) => {
+            const blob = new Blob([JSON.stringify(e.target.result)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'VaultPro_Backup.json';
+            a.click();
+        };
+    }
+</script>
+</body>
+</html>
